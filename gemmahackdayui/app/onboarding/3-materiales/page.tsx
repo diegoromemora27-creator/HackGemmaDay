@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useStore, useAppMode } from "@/lib/store";
 import { request, constructMediaUrl } from "@/lib/api";
 import { toast } from "sonner";
+import { VoiceAssistantPlayer } from "@/components/VoiceAssistantPlayer";
 import { 
   FileText, 
   Camera, 
@@ -198,7 +199,7 @@ export default function MaterialesOnboardingPage() {
                   )}
                   {notesAudioUrl && (
                     <div className="mt-2">
-                      <audio src={constructMediaUrl(notesAudioUrl)} controls autoPlay={isSenior} className="w-full h-10" />
+                      <VoiceAssistantPlayer src={constructMediaUrl(notesAudioUrl)} autoPlay={true} title="Confirmación de apuntes" className="w-full" />
                     </div>
                   )}
                 </div>

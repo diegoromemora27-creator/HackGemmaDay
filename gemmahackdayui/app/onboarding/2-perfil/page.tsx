@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useStore, AppMode } from "@/lib/store";
 import { request } from "@/lib/api";
 import { toast } from "sonner";
+import { VoiceAssistantPlayer } from "@/components/VoiceAssistantPlayer";
 import { 
   UserCircle2, 
   Mic, 
@@ -281,7 +282,7 @@ export default function PerfilOnboardingPage() {
                 {audioBlob && !isRecording && (
                   <div className="w-full space-y-6 animate-in fade-in zoom-in duration-300">
                     <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                      <audio src={URL.createObjectURL(audioBlob)} controls className="w-full" />
+                      <VoiceAssistantPlayer src={URL.createObjectURL(audioBlob)} title="Tu grabación" className="w-full" />
                     </div>
                     <div className="flex gap-4">
                       <button

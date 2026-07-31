@@ -3,12 +3,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useStore } from "@/lib/store";
 import { request, constructMediaUrl } from "@/lib/api";
+import { VoiceAssistantPlayer } from "@/components/VoiceAssistantPlayer";
 import { createExperience, createExperienceAudio } from "@/lib/experience";
 import { toast } from "sonner";
-import { 
-  Send, 
-  Loader2, 
-  UserCircle2, 
+import {
+  Send,
+  Loader2,
+  UserCircle2,
   Settings2,
   Sparkles,
   BookOpen,
@@ -21,10 +22,10 @@ export default function EstudiarPage() {
   const { profile, topics } = useStore();
   const [promptText, setPromptText] = useState("");
   const [contextText, setContextText] = useState("");
-  
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [experienceData, setExperienceData] = useState<any>(null);
-  
+
   // Audio state
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -45,13 +46,13 @@ export default function EstudiarPage() {
     "Crea una lección detallada",
     "Hazme un quiz",
   ];
-  
+
   const userName = profile?.nombre || "amig@";
 
   const handleAskText = async (forcePrompt?: string) => {
     const textToUse = forcePrompt || promptText;
     if (!textToUse.trim()) return;
-    
+
     setIsGenerating(true);
     setExperienceData(null);
     setAudioBlob(null);
@@ -65,7 +66,7 @@ export default function EstudiarPage() {
         instruccion: textToUse,
         contexto_extra: contextText
       };
-      
+
       // Send a subtema if topics exist to use it as context
       if (topics.length > 0) {
         payload.subtema = topics[0].subtema;
@@ -88,7 +89,7 @@ export default function EstudiarPage() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
       const chunks: BlobPart[] = [];
-      
+
       recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = () => {
         const blob = new Blob(chunks, { type: 'audio/webm' });
@@ -97,7 +98,7 @@ export default function EstudiarPage() {
         // Automatically submit the audio once stopped
         submitAudioExperience(blob);
       };
-      
+
       recorder.start();
       mediaRecorder.current = recorder;
       setIsRecording(true);
@@ -158,47 +159,23 @@ export default function EstudiarPage() {
   const focusRing = isElderly ? "focus-within:ring-teal-500/50 focus-within:border-teal-500" : "focus-within:ring-indigo-500/50 focus-within:border-indigo-500";
   const shadowPrimary = isElderly ? "shadow-teal-600/20" : "shadow-indigo-600/20";
   const badgeBg = isElderly ? "bg-teal-100" : "bg-indigo-100";
-  
+
   return (
     <div className={`flex flex-col h-[calc(100vh-2rem)] p-4 md:p-8 animate-in fade-in duration-500 ${isElderly ? 'scale-100 origin-top bg-[#f4f7f6]' : ''}`}>
-      
+
       {/* Header & Profile Dock */}
       <div className="flex justify-between items-start mb-8 shrink-0">
         <div>
           <h1 className={`font-extrabold ${primaryDark} mb-2 ${isElderly ? 'text-4xl' : 'text-3xl'}`}>Hola {userName}, ¿qué quieres aprender hoy?</h1>
           <p className={`text-slate-500 ${isElderly ? 'text-xl' : 'text-base'}`}>Pídele a Gemma cómo quieres estudiar en este momento.</p>
         </div>
-        
-        {/* Profile Summary Dock */}
-        {profile && (
-          <div className={`hidden md:flex flex-col items-end ${primaryLightBg}/70 border ${primaryLightBorder} rounded-2xl p-4 shadow-sm min-w-[250px]`}>
-            <div className={`flex items-center gap-2 mb-2 w-full border-b ${primaryLightBorder} pb-2`}>
-              <UserCircle2 className={`${primaryIcon} w-5 h-5`} />
-              <span className={`font-bold ${primaryDark} text-sm`}>{profile.nombre}</span>
-              <button className={`ml-auto text-xs ${primaryText} hover:opacity-80`}><Settings2 className="w-4 h-4" /></button>
-            </div>
-            <div className={`text-xs ${primaryDark}/70 w-full space-y-1`}>
-              <div className="flex justify-between"><span>Nivel:</span> <span className="font-medium capitalize">{profile.nivel_actual}</span></div>
-              <div className="flex justify-between"><span>Estilo:</span> <span className="font-medium capitalize">{profile.estilo_aprendizaje}</span></div>
-              {profile.grupo_etario && (
-                <div className="flex justify-between"><span>Grupo:</span> <span className="font-medium capitalize">{profile.grupo_etario.replace('_', ' ')}</span></div>
-              )}
-              {profile.necesidades_especiales && (
-                <div className={`mt-1 pt-1 border-t ${primaryLightBorder}/50`}>
-                  <span className={`font-medium ${primaryText} block text-xs`} title={profile.necesidades_especiales}>Nota: {profile.necesidades_especiales}</span>
-                </div>
-              )}
-              <div className={`mt-1 pt-1 border-t ${primaryLightBorder}/50`}>
-                <span className={`font-medium ${primaryText} truncate block`} title={profile.objetivo_principal}>{profile.objetivo_principal}</span>
-              </div>
-            </div>
-          </div>
-        )}
+
+        {/* Profile Summary Dock removed as requested */}
       </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-0 bg-white border border-slate-200 rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden">
-        
+
         {/* Output Area */}
         <div className={`flex-1 overflow-y-auto p-6 md:p-10 ${isElderly ? 'bg-stone-50' : 'bg-slate-50/50'}`}>
           {!experienceData && !isGenerating ? (
@@ -206,7 +183,7 @@ export default function EstudiarPage() {
               <div className="h-full flex flex-col items-center justify-center text-center space-y-8 text-stone-600">
                 <Sparkles className={`w-20 h-20 text-teal-500 opacity-50 mb-4`} />
                 <h2 className="text-3xl font-bold text-teal-800">¡Gemma está lista para ayudarte!</h2>
-                
+
                 <div className="bg-white p-8 rounded-3xl shadow-lg border border-teal-100 max-w-xl w-full text-left space-y-6">
                   <div className="flex items-center gap-4">
                     <div className="bg-teal-100 text-teal-700 w-12 h-12 rounded-full flex items-center justify-center font-bold text-2xl shrink-0">1</div>
@@ -235,7 +212,7 @@ export default function EstudiarPage() {
             </div>
           ) : (
             <div className="max-w-4xl mx-auto space-y-8 animate-in slide-in-from-bottom-4">
-              
+
               <div className="flex items-center gap-3 mb-2">
                 <BookOpen className={`w-8 h-8 ${primaryIcon}`} />
                 <h2 className="text-2xl font-bold text-slate-800">{experienceData.titulo || "Tu Experiencia"}</h2>
@@ -250,18 +227,19 @@ export default function EstudiarPage() {
               </div>
 
               {experienceData.url_audio && (
-                <div className={`p-4 ${isElderly ? 'bg-teal-50 border-teal-100' : 'bg-emerald-50 border-emerald-100'} rounded-2xl border flex flex-col gap-3`}>
-                  <span className={`text-sm font-bold ${isElderly ? 'text-teal-800' : 'text-emerald-800'} flex items-center gap-2`}>
-                    <Headphones className="w-4 h-4" /> Versión en audio
-                  </span>
-                  <audio src={constructMediaUrl(experienceData.url_audio)} controls className="w-full" />
+                <div className="mb-6">
+                  <VoiceAssistantPlayer 
+                    src={constructMediaUrl(experienceData.url_audio)} 
+                    autoPlay={true} 
+                    title={experienceData.tipo_experiencia}
+                  />
                 </div>
               )}
 
               {experienceData.url_html ? (
                 <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-inner bg-white h-[600px] w-full">
-                  <iframe 
-                    src={constructMediaUrl(experienceData.url_html)} 
+                  <iframe
+                    src={constructMediaUrl(experienceData.url_html)}
                     className="w-full h-full border-none"
                     title="Experiencia de Estudio"
                     sandbox="allow-scripts allow-same-origin"
@@ -279,7 +257,7 @@ export default function EstudiarPage() {
 
         {/* Input Area (Composer) */}
         <div className={`p-4 md:p-6 bg-white border-t border-slate-100 shrink-0 ${isElderly ? 'pb-8 bg-stone-50' : ''}`}>
-          
+
           {isElderly ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               {chips.map((chip, i) => (
@@ -312,11 +290,11 @@ export default function EstudiarPage() {
               ))}
             </div>
           )}
-          
+
           <div className="flex gap-3 items-end">
             <div className={`flex-1 bg-white border-2 border-slate-200 rounded-3xl overflow-hidden transition-all flex flex-col ${focusRing} ${isElderly ? 'shadow-md border-teal-200' : ''}`}>
               {!isElderly && (
-                <input 
+                <input
                   type="text"
                   placeholder="Contexto opcional (ej: para un examen de mañana, o nivel niño)"
                   value={contextText}
@@ -340,13 +318,11 @@ export default function EstudiarPage() {
                 />
                 <button
                   onClick={isRecording ? stopRecording : startRecording}
-                  className={`mb-2 mr-2 shrink-0 flex items-center justify-center transition-colors ${
-                    isElderly ? 'w-14 h-14 rounded-2xl bg-teal-100 text-teal-700 hover:bg-teal-200' : 'w-10 h-10 rounded-xl bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600'
-                  } ${
-                    isRecording 
-                    ? "bg-rose-100 text-rose-500 animate-pulse border-2 border-rose-200" 
-                    : ""
-                  }`}
+                  className={`mb-2 mr-2 shrink-0 flex items-center justify-center transition-colors ${isElderly ? 'w-14 h-14 rounded-2xl bg-teal-100 text-teal-700 hover:bg-teal-200' : 'w-10 h-10 rounded-xl bg-slate-100 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600'
+                    } ${isRecording
+                      ? "bg-rose-100 text-rose-500 animate-pulse border-2 border-rose-200"
+                      : ""
+                    }`}
                   title="Hablar instrucción"
                 >
                   {isRecording ? <Square className={isElderly ? 'w-8 h-8' : 'w-5 h-5'} /> : <Mic className={isElderly ? 'w-8 h-8' : 'w-5 h-5'} />}
@@ -356,11 +332,10 @@ export default function EstudiarPage() {
             <button
               onClick={() => handleAskText()}
               disabled={isGenerating || (!promptText.trim() && !isRecording)}
-              className={`shrink-0 flex items-center justify-center transition-all shadow-lg disabled:opacity-50 ${
-                isElderly 
-                ? 'w-20 h-20 rounded-3xl bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/30' 
-                : `w-14 h-14 rounded-2xl ${primaryBg} text-white ${shadowPrimary}`
-              }`}
+              className={`shrink-0 flex items-center justify-center transition-all shadow-lg disabled:opacity-50 ${isElderly
+                  ? 'w-20 h-20 rounded-3xl bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/30'
+                  : `w-14 h-14 rounded-2xl ${primaryBg} text-white ${shadowPrimary}`
+                }`}
             >
               <Send className={`${isElderly ? 'w-10 h-10' : 'w-6 h-6'} ml-1`} />
             </button>
