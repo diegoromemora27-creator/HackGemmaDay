@@ -1,5 +1,8 @@
 export function getBaseUrl() {
-  return 'https://gatherer-nibble-deletion.ngrok-free.dev';
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('scq_base_url') || '';
+  }
+  return '';
 }
 
 export async function request(path: string, options: RequestInit = {}) {

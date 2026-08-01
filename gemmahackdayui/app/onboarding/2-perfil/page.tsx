@@ -104,6 +104,8 @@ export default function PerfilOnboardingPage() {
     try {
       const fd = new FormData();
       fd.append("audio", audioBlob, "perfil.webm");
+      // Explicitly set false to save time, as we don't display the transcription
+      fd.append("incluir_transcripcion", "false");
 
       const res = await request("/profile/audio", {
         method: "POST",
@@ -112,7 +114,7 @@ export default function PerfilOnboardingPage() {
       const data = await res.json();
       setIsSubmitting(false);
       setPendingProfile(data.perfil);
-      setTranscription(data.transcripcion);
+      setTranscription(data.transcripcion ?? null);
     } catch (e: any) {
       setIsSubmitting(false);
       toast.error(e.message || "Error procesando el audio");
@@ -128,8 +130,14 @@ export default function PerfilOnboardingPage() {
             <Sparkles className="w-10 h-10 animate-bounce" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-3">Conociéndote...</h2>
-        <p className="text-slate-500">Gemma está analizando lo que le contaste.</p>
+        <h2 className="text-2xl font-bold text-slate-800 mb-3">
+          {mode === "edit_audio" ? "Analizando tu entrevista..." : "Conociéndote..."}
+        </h2>
+        <p className="text-slate-500 text-center max-w-md">
+          {mode === "edit_audio" 
+            ? "Gemma 4 está escuchando y procesando tu audio. Esto puede tardar unos momentos, ¡gracias por tu paciencia!" 
+            : "Gemma está analizando lo que le contaste."}
+        </p>
         
         <div className="w-64 h-2 bg-slate-200 rounded-full mt-8 overflow-hidden">
           <div className="h-full bg-indigo-500 rounded-full animate-[progress_2s_ease-in-out_infinite]" style={{ width: '40%' }}></div>
@@ -143,30 +151,36 @@ export default function PerfilOnboardingPage() {
     const group = pendingProfile.grupo_etario?.toLowerCase() || '';
     const needs = pendingProfile.necesidades_especiales?.toLowerCase() || '';
     const isSenior = group.includes('adulto') || group.includes('adulto_mayor') || needs.includes('simple') || needs.includes('grandes');
+    const isChild = group.includes('niño') || group.includes('nino') || group.includes('niña') || group.includes('infantil') || group.includes('primaria') || group.includes('pequeño') || group.includes('pequeno');
+    
+    const primaryBg = isSenior ? "bg-teal-700 hover:bg-teal-800" : isChild ? "bg-sky-500 hover:bg-sky-600" : "bg-indigo-600 hover:bg-indigo-700";
+    const primaryLight = isSenior ? "bg-teal-100 text-teal-700" : isChild ? "bg-amber-100 text-amber-600" : "bg-indigo-100 text-indigo-600";
+    const secondaryLight = isSenior ? "bg-stone-200 text-stone-700" : isChild ? "bg-sky-100 text-sky-600" : "bg-emerald-100 text-emerald-600";
+    const shadowPrimary = isSenior ? "shadow-teal-700/30" : isChild ? "shadow-sky-500/40" : "shadow-indigo-600/20";
     
     return (
-      <div className="max-w-xl mx-auto pt-12 animate-in fade-in duration-500">
-        <h2 className="text-3xl font-extrabold text-slate-900 mb-2 text-center">Entendí esto de ti</h2>
-        <p className="text-center text-slate-500 mb-8">Verifica si Gemma capturó bien tu esencia.</p>
+      <div className={`max-w-xl mx-auto pt-12 animate-in fade-in duration-500 ${isSenior ? 'scale-100' : ''}`}>
+        <h2 className={`text-3xl font-extrabold mb-2 text-center ${isSenior ? 'text-stone-900' : isChild ? 'text-4xl text-sky-600 font-black tracking-tight' : 'text-slate-900'}`}>Entendí esto de ti</h2>
+        <p className={`text-center mb-8 ${isSenior ? 'text-stone-600 text-xl font-medium' : isChild ? 'text-amber-600 font-bold text-lg' : 'text-slate-500'}`}>Verifica si Gemma capturó bien tu esencia.</p>
         
-        <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl shadow-slate-200/50 mb-8 space-y-6">
+        <div className={`bg-white p-8 border shadow-xl mb-8 space-y-6 ${isSenior ? 'rounded-2xl border-stone-200 shadow-stone-200/50' : isChild ? 'rounded-[2.5rem] border-sky-100 border-4 shadow-sky-100/50' : 'rounded-3xl border-slate-200 shadow-slate-200/50'}`}>
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${primaryLight}`}>
               <UserCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-slate-500 font-medium uppercase tracking-wider">Nombre</p>
-              <p className="text-xl font-bold text-slate-800">{pendingProfile.nombre || 'Estudiante'}</p>
+              <p className={`text-sm font-medium uppercase tracking-wider ${isSenior ? 'text-stone-500' : isChild ? 'text-sky-500 font-bold' : 'text-slate-500'}`}>Nombre</p>
+              <p className={`text-xl font-bold ${isSenior ? 'text-stone-800' : isChild ? 'text-sky-900' : 'text-slate-800'}`}>{pendingProfile.nombre || 'Estudiante'}</p>
             </div>
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${secondaryLight}`}>
               <Sparkles className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-slate-500 font-medium uppercase tracking-wider">Meta principal</p>
-              <p className="text-lg font-medium text-slate-800">{pendingProfile.objetivo_principal || pendingProfile.objetivo || 'Aprender'}</p>
+              <p className={`text-sm font-medium uppercase tracking-wider ${isSenior ? 'text-stone-500' : isChild ? 'text-sky-500 font-bold' : 'text-slate-500'}`}>Meta principal</p>
+              <p className={`text-lg font-medium ${isSenior ? 'text-stone-800' : isChild ? 'text-sky-900 font-bold' : 'text-slate-800'}`}>{pendingProfile.objetivo_principal || pendingProfile.objetivo || 'Aprender'}</p>
             </div>
           </div>
         </div>
@@ -174,9 +188,9 @@ export default function PerfilOnboardingPage() {
         <div className="space-y-4">
           <button
             onClick={confirmProfile}
-            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold transition-colors shadow-md shadow-indigo-600/20 text-lg flex justify-center items-center gap-2"
+            className={`w-full py-4 text-white rounded-2xl font-bold transition-colors shadow-md text-lg flex justify-center items-center gap-2 ${primaryBg} ${shadowPrimary} ${isChild ? 'rounded-[2rem] text-xl py-5 hover:-translate-y-1' : ''}`}
           >
-            <CheckCircle2 className="w-5 h-5" /> ¡Sí, soy yo! Continuar
+            <CheckCircle2 className={`${isChild ? 'w-7 h-7' : 'w-5 h-5'}`} /> ¡Sí, {isChild ? 'soy yo' : isSenior ? 'continuar' : 'soy yo! Continuar'}
           </button>
           <button
             onClick={() => {
@@ -185,7 +199,7 @@ export default function PerfilOnboardingPage() {
               setAudioBlob(null);
               setMode("choose");
             }}
-            className="w-full py-4 bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-2xl font-bold transition-colors text-lg"
+            className={`w-full py-4 bg-white border border-slate-200 text-slate-600 font-bold transition-colors text-lg ${isChild ? 'rounded-[2rem] hover:bg-slate-50' : 'rounded-2xl hover:bg-slate-50'}`}
           >
             No, volver a intentarlo
           </button>

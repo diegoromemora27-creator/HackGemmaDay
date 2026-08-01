@@ -49,7 +49,7 @@ export const useStore = create<StoreState>()(
   )
 );
 
-export type AppMode = 'student' | 'senior' | 'default';
+export type AppMode = 'student' | 'senior' | 'child' | 'default';
 
 export const useAppMode = (): AppMode => {
   const profile = useStore((s) => s.profile);
@@ -59,6 +59,9 @@ export const useAppMode = (): AppMode => {
   const needs = profile.necesidades_especiales?.toLowerCase() || '';
   
   const isSenior = group.includes('adulto') || group.includes('adulto_mayor') || needs.includes('simple') || needs.includes('grandes');
+  const isChild = group.includes('niño') || group.includes('nino') || group.includes('niña') || group.includes('infantil') || group.includes('primaria') || group.includes('pequeño') || group.includes('pequeno');
   
-  return isSenior ? 'senior' : 'student';
+  if (isSenior) return 'senior';
+  if (isChild) return 'child';
+  return 'student';
 };

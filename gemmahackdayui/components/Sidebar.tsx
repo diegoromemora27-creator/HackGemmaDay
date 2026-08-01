@@ -10,7 +10,8 @@ import {
   BarChart2, 
   MessageSquare, 
   Camera,
-  GraduationCap
+  GraduationCap,
+  Bot
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useEffect, useState } from "react";
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { name: "Favoritos", path: "/favoritos", icon: Heart },
   { name: "Progreso", path: "/progreso", icon: BarChart2 },
   { name: "Preguntar", path: "/preguntar", icon: MessageSquare },
+  { name: "Asistente", path: "/assistant", icon: Bot },
   { name: "Configuración", path: "/configuracion", icon: Settings },
 ];
 
